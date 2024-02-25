@@ -1,6 +1,7 @@
 package ru.practicum;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -12,6 +13,7 @@ public class Task implements Runnable {
     private RestTemplate restTemplate;
     private EndPointHitDto endPointHitDto;
 
+
     public Task(RestTemplate restTemplate, EndPointHitDto endPointHitDto) {
         this.restTemplate = restTemplate;
         this.endPointHitDto = endPointHitDto;
@@ -19,6 +21,7 @@ public class Task implements Runnable {
 
     @Override
     public void run() {
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<EndPointHitDto> requestEntity = new HttpEntity<>(endPointHitDto, headers);
