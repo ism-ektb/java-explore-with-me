@@ -25,6 +25,7 @@ class MultiClientTest {
         }
         log.info("Все задания запущены");
 
+        //делаем паузу, что бы увидеть результат выполнения заданий
         long start = System.currentTimeMillis();
         long end = start + 5 * 1000;
         while (System.currentTimeMillis() < end) {

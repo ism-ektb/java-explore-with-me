@@ -8,12 +8,12 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
-public class Task implements Runnable {
+public class GetClient implements Runnable {
     private RestTemplate restTemplate;
     private EndPointHitDto endPointHitDto;
 
 
-    public Task(RestTemplate restTemplate, EndPointHitDto endPointHitDto) {
+    public GetClient(RestTemplate restTemplate, EndPointHitDto endPointHitDto) {
         this.restTemplate = restTemplate;
         this.endPointHitDto = endPointHitDto;
     }
@@ -27,7 +27,7 @@ public class Task implements Runnable {
         try {
             restTemplate.exchange("http://localhost:9090/hit", HttpMethod.POST,
                     requestEntity, EndPointHitDto.class);
-            log.info("Hit {} сохранен в статистике", endPointHitDto.toString());
+            log.info("Успех! Hit {} сохранен в статистике", endPointHitDto.toString());
         } catch (Exception e) {
             log.warn("Ошибка сохранения данных с статистику: {}", e.getMessage());
         }
