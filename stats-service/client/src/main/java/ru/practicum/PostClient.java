@@ -8,12 +8,12 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
-public class GetClient implements Runnable {
+public class PostClient implements Runnable {
     private RestTemplate restTemplate;
     private EndPointHitDto endPointHitDto;
 
 
-    public GetClient(RestTemplate restTemplate, EndPointHitDto endPointHitDto) {
+    public PostClient(RestTemplate restTemplate, EndPointHitDto endPointHitDto) {
         this.restTemplate = restTemplate;
         this.endPointHitDto = endPointHitDto;
     }

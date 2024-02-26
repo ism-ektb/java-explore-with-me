@@ -14,7 +14,7 @@ public class MultiClient {
             Executors.newFixedThreadPool(4);
 
     public void saveHit(EndPointHitDto endPointHitDto) {
-        executor.execute(new GetClient(restTemplate, endPointHitDto));
+        executor.execute(new PostClient(restTemplate, endPointHitDto));
     }
 }
 
