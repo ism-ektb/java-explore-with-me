@@ -1,5 +1,7 @@
 package ru.practicum;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -7,13 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Slf4j
 public class GetClient {
 
     private RestTemplate restTemplate = new RestTemplate();
+    @Value("${stats.url}")
+    private String server;
 
     public List<ViewStatsDto> readStat(List<String> uris) {
         StringBuilder str = new StringBuilder();
-        str.append("http://localhost:9090/stats?uris=");
+        str.append(server);
+        str.append("/stats?uris=");
         for (String uri : uris) {
             str.append(uri + ",");
         }
@@ -23,6 +29,7 @@ public class GetClient {
             ViewStatsDto[] response = restTemplate.getForObject(str.toString(), ViewStatsDto[].class);
             return List.of(response);
         } catch (Exception e) {
+            log.warn(e.getMessage());
             return new ArrayList<>();
         }
 

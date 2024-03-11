@@ -1,6 +1,7 @@
 package ru.practicum;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -11,6 +12,8 @@ import java.time.LocalDateTime;
 @Service
 public class MultiClient {
 
+    @Value("${stats.url}")
+    private String server;
     private RestTemplate restTemplate = new RestTemplate();
     //private ExecutorService executor = Executors.newFixedThreadPool(4);
 
@@ -20,7 +23,7 @@ public class MultiClient {
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now()).build();
-        PostClient client = new PostClient(restTemplate, endPointHitDto);
+        PostClient client = new PostClient(restTemplate, endPointHitDto, server);
         client.run();
       /* отключим многопоточность для корректного прохождения тестов
         executor.execute(new PostClient(restTemplate, endPointHitDto));

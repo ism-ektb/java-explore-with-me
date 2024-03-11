@@ -15,7 +15,7 @@ public class PrivateRequestController {
     private final RequestService service;
 
     @GetMapping
-    public List<ParticipationRequestDto> getByUserId(@PathVariable(name = "userId") long userId) {
+    public List<ParticipationRequestDto> getByUserId(@PathVariable long userId) {
         return service.getRequestByUserIdByUser(userId);
     }
 

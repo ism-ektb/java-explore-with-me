@@ -32,23 +32,23 @@ public class PublicEventController {
 
     @GetMapping("/events")
     @ValidStartIsBeforeEnd
-    public List<EventShortDto> getEvents(@RequestParam(value = "text", required = false)
+    public List<EventShortDto> getEvents(@RequestParam( required = false)
                                          String text,
-                                         @RequestParam(value = "categories", required = false)
+                                         @RequestParam(required = false)
                                          List<Long> categories,
-                                         @RequestParam(value = "paid", required = false)
+                                         @RequestParam(required = false)
                                          Boolean paid,
                                          @RequestParam(required = false,
                                                  defaultValue = "#{T(java.time.LocalDateTime).now()}") LocalDateTime rangeStart,
                                          @RequestParam(required = false,
                                                  defaultValue = "#{T(java.time.LocalDateTime).now().plusYears(200)}")
                                          LocalDateTime rangeEnd,
-                                         @RequestParam(value = "paid", defaultValue = "false")
+                                         @RequestParam(defaultValue = "false")
                                          Boolean onlyAvailable,
-                                         @RequestParam(value = "sort", required = false, defaultValue = "EVENT_DATE") SortVariant sort,
-                                         @RequestParam(value = "from", required = false, defaultValue = "0")
+                                         @RequestParam(required = false, defaultValue = "EVENT_DATE") SortVariant sort,
+                                         @RequestParam(required = false, defaultValue = "0")
                                          Integer from,
-                                         @RequestParam(value = "size", required = false, defaultValue = "10")
+                                         @RequestParam(required = false, defaultValue = "10")
                                          Integer size,
                                          HttpServletRequest request) {
         multiClient.saveHit(request);
