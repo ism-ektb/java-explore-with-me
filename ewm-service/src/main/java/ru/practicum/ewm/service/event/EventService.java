@@ -70,6 +70,9 @@ public interface EventService {
      */
     EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
+    /**
+     * валидация eventId
+     */
     Event getAndCheckEventById(Long eventId);
 
     /**

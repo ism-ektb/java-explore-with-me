@@ -59,7 +59,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> getEventsByUser(long userId, PageRequest pageRequest) {
         List<Event> events = repository.findAllByInitiatorId(userId, pageRequest);
-        //запрос статистики
+        //запрос статистики и сохранение результата
         List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(events));
         return listMapper.modelsToDtos(events, list);
     }
@@ -73,7 +73,9 @@ public class EventServiceImpl implements EventService {
         //Валидация входных данных
         userService.getUserByIdIfExist(userId);
         categoryService.findCatById(newEventDto.getCategory());
+        //сохраняем
         Event event = repository.save(mapper.dtoToModel(newEventDto, userId));
+        //формируем ответ
         List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(List.of(event)));
         return mapper.modelToDto(event, list.isEmpty() ? 0L : list.get(0).getHits());
     }
@@ -107,6 +109,7 @@ public class EventServiceImpl implements EventService {
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))
                 || event.getState().equals(PUBLISHED)) throw new BaseRelationshipException(
                 String.format("Событие с id='%s' не может быть изменено", eventId));
+        //обновление и сохранение результата
         Event eventNew = repository.save(patcher.userPatch(event, updateEventUserRequest));
         List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(List.of(eventNew)));
         return mapper.modelToDto(eventNew, list.isEmpty() ? 0L : list.get(0).getHits());
@@ -125,7 +128,7 @@ public class EventServiceImpl implements EventService {
         if (!(event.getInitiator().equals(user)))
             throw new BaseRelationshipException(String.format("Пользователь с id '%ы' не является иницматором " +
                     "события с id '%s'", userId, eventId));
-
+        //формирование ответа
         return requestListMapper.modelsToDtos(requestRepository.findAllByEventId(eventId));
     }
 
@@ -161,8 +164,7 @@ public class EventServiceImpl implements EventService {
                 if (req.getStatus().equals(RequestStatus.PENDING)) req.setStatus(RequestStatus.REJECTED);
                 rejected.add(req);
             }
-        } else {
-
+        } else { //RequestStatus.CONFIRMED
             int freePlaces = event.getParticipantLimit() - event.getConfirmedRequests();
             if (freePlaces <= 0)
                 throw new BaseRelationshipException(String.format("Лимит участников события с id '%s' достигнут", eventId));
@@ -175,7 +177,7 @@ public class EventServiceImpl implements EventService {
                     }
                 } else break;
             }
-            while (waitList.size() > 0) {
+            while (waitList.size() > 0) { //Если заявок больше чем свободных мест
                 ParticipationRequest req = waitList.remove(0);
                 req.setStatus(RequestStatus.CANCELED);
                 rejected.add(req);
@@ -212,6 +214,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventFullDto updateEventByAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
+        //Проверяем входные данные
         Event event = repository.findById(eventId)
                 .orElseThrow(() -> new NoFoundObjectException(String.format(
                         "Событие с id='%s'  не найдено", eventId)));
@@ -219,12 +222,16 @@ public class EventServiceImpl implements EventService {
                 || event.getState().equals(PUBLISHED) || event.getState().equals(CANCELED))
             throw new BaseRelationshipException(
                     String.format("Событие с id='%s' не может быть изменено", eventId));
+        //обновляем и сохраняем
         Event eventNew = repository.save(patcher.adminPatch(event, updateEventAdminRequest));
         List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(List.of(eventNew)));
         return mapper.modelToDto(eventNew, list.isEmpty() ? 0L : list.get(0).getHits());
 
     }
 
+    /**
+     * метод для валидвции eventId по базе данных
+     */
     @Override
     @Transactional
     public Event getAndCheckEventById(Long eventId) {

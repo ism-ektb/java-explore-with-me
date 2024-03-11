@@ -15,7 +15,9 @@ public class MultiClient {
     @Value("${stats.url}")
     private String server;
     private RestTemplate restTemplate = new RestTemplate();
-    //private ExecutorService executor = Executors.newFixedThreadPool(4);
+    /* отключаем многопоточность для прохождения тестов
+    private ExecutorService executor = Executors.newFixedThreadPool(4);
+     */
 
     public void saveHit(HttpServletRequest request) {
         EndPointHitDto endPointHitDto = EndPointHitDto.builder()
@@ -27,7 +29,7 @@ public class MultiClient {
         client.run();
       /* отключим многопоточность для корректного прохождения тестов
         executor.execute(new PostClient(restTemplate, endPointHitDto));
-          */
+        */
     }
 }
 

@@ -52,6 +52,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    /**
+     * Валидация userId
+     */
     @Override
     public User getUserByIdIfExist(Long userId) {
         return repository.findById(userId)

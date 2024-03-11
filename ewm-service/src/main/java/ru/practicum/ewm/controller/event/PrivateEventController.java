@@ -21,7 +21,6 @@ import java.util.List;
 @Slf4j
 public class PrivateEventController {
     private final EventService service;
-    //   private final MultiClient multiClient;
 
     @GetMapping
     public List<EventShortDto> getEventsByUser(@Positive @PathVariable long userId,
@@ -43,8 +42,6 @@ public class PrivateEventController {
     public EventFullDto getEventByIdByUser(@Positive @PathVariable long userId,
                                            @Positive @PathVariable long eventId,
                                            HttpServletRequest request) {
-        //     multiClient.saveHit(request);
-        log.info("uri: {}", request.getRequestURI());
         return service.getEventByIdByUser(userId, eventId);
     }
 
@@ -66,7 +63,6 @@ public class PrivateEventController {
                                                                   @PathVariable Long eventId,
                                                                   @Valid @RequestBody
                                                                   EventRequestStatusUpdateRequest updateRequest) {
-     //   log.info("{} {} {}", userId, eventId, updateRequest.toString());
         return service.conformRequestsByUser(userId, eventId, updateRequest);
     }
 

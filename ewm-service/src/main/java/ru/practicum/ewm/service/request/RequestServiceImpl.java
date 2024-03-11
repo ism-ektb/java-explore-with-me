@@ -58,10 +58,10 @@ public class RequestServiceImpl implements RequestService {
         User user = userService.getUserByIdIfExist(userId);
         Event event = eventService.getAndCheckEventById(eventId);
 
-        // преобразуем входные данные в запрос, и проверяем их правильность
+        // преобразуем входные данные в сущность, и проверяем их правильность
         ParticipationRequest request = longMapper.longToModel(user, event);
 
-        // сохраняем запрос и проверяем его уникальность
+        // сохраняем сущность и проверяем её уникальность
         return mapper.modelToDto(repository.save(request));
     }
 
@@ -71,12 +71,14 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public ParticipationRequestDto cancelRequest(long userId, long requestId) {
+        //Проверяем входные данные
         User user = userService.getUserByIdIfExist(userId);
         ParticipationRequest request = repository.findById(requestId)
                 .orElseThrow(() -> new BaseRelationshipException(String.format("Запрос с id '%s' не найден", requestId)));
         if (!(request.getRequester().equals(user)))
             throw new BaseRelationshipException(String.format("Отменить запрос c id: '%s' может только" +
                     " реквестор c id: '%s'", requestId, userId));
+        //Отклоняем заявку
         request.setStatus(RequestStatus.CANCELED);
         return mapper.modelToDto(repository.save(request));
     }

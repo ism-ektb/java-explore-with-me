@@ -36,5 +36,4 @@ public class PostClient implements Runnable {
             log.warn("Ошибка сохранения данных с статистику: {}", e.getMessage());
         }
     }
-
 }

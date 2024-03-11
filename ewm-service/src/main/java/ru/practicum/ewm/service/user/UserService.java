@@ -24,5 +24,8 @@ public interface UserService {
      */
     void deleteUser(long userId);
 
+    /**
+     * Валидация userId
+     */
     User getUserByIdIfExist(Long userId);
 }

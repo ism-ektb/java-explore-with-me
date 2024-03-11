@@ -34,7 +34,6 @@ public class AdminUserController {
     public List<UserDto> findUsers(@RequestParam(required = false) Set<Long> ids,
                                    @RequestParam(required = false, defaultValue = "0") @PositiveOrZero int from,
                                    @RequestParam(required = false, defaultValue = "10") @Positive int size) {
-        log.info("ids: {}", ids);
         return service.findUser(ids, PageRequest.of(from / size, size));
 
     }
