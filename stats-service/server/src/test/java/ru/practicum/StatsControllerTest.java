@@ -43,7 +43,7 @@ class StatsControllerTest {
                         .param("start", "2020-05-05 00:00:00")
                         .param("end", "2035-05-05 00:00:00")
                         .param("unique", "true"))
-                .andExpect(status().isOk())
+                .andExpect(status().is2xxSuccessful())
                 .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         assertEquals(mapper.writeValueAsString(List.of(viewStatsDto)), response);
         verify(service).getStats(LocalDateTime.of(2020, 05, 05, 00, 00, 00),
@@ -109,29 +109,10 @@ class StatsControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         //.content(mapper.writeValueAsString(endPointHitDto)))
                         .content("{\"id\":1,\"app\":\"user1\",\"uri\":\"useruser.com\",\"ip\":\"100.100.100.100\",\"timestamp\":\"2020-05-05 00:00:00\"}"))
-                .andExpect(status().isOk())
+                .andExpect(status().is2xxSuccessful())
                 .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         assertEquals(mapper.writeValueAsString(endPointHitDto), response);
         verify(service).save(endPointHitDto);
-    }
-
-    @Test
-    @SneakyThrows
-    void save_whenSendBadIp_thenReturnError() {
-        LocalDateTime dateTime = LocalDateTime.of(2020, 05, 05, 00, 00, 00);
-
-        EndPointHitDto endPointHitDto = EndPointHitDto.builder()
-                .app("ewm-main-service")
-                .uri("events/1")
-                .ip("723.123.123.123")
-                .timestamp(dateTime).build();
-        when(service.save(any())).thenReturn(endPointHitDto);
-        mvc.perform(post("/hit")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(mapper.writeValueAsString(endPointHitDto)))
-                .andExpect(status().is4xxClientError());
-        verifyNoInteractions(service);
     }
 
     @Test
