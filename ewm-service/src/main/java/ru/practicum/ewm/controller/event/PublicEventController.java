@@ -32,7 +32,7 @@ public class PublicEventController {
 
     @GetMapping("/events")
     @ValidStartIsBeforeEnd
-    public List<EventShortDto> getEvents(@RequestParam( required = false)
+    public List<EventShortDto> getEvents(@RequestParam(required = false)
                                          String text,
                                          @RequestParam(required = false)
                                          List<Long> categories,
