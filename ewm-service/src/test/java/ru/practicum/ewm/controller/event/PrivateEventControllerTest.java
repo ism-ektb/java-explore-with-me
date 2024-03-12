@@ -9,17 +9,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.practicum.ewm.dto.event.EventFullDto;
+import ru.practicum.ewm.dto.event.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.dto.event.EventRequestStatusUpdateResponse;
 import ru.practicum.ewm.dto.event.NewEventDto;
 import ru.practicum.ewm.dto.location.LocationDto;
+import ru.practicum.ewm.dto.request.RequestStatus;
 import ru.practicum.ewm.exception.exception.NoFoundObjectException;
 import ru.practicum.ewm.service.event.EventService;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = PrivateEventController.class)
@@ -60,7 +64,7 @@ class PrivateEventControllerTest {
                 .title("test").build();
         EventFullDto eventFullDto = EventFullDto.builder().build();
         when(service.saveEvent(anyLong(), any())).thenReturn(eventFullDto);
-        String response = mvc.perform(MockMvcRequestBuilders.post("/users/{userId}/events", "1")
+        String response = mvc.perform(post("/users/{userId}/events", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(mapper.writeValueAsString(newEventDto)))
@@ -93,7 +97,7 @@ class PrivateEventControllerTest {
                 .title("test").build();
         EventFullDto eventFullDto = EventFullDto.builder().build();
         when(service.saveEvent(anyLong(), any())).thenReturn(eventFullDto);
-        String response = mvc.perform(MockMvcRequestBuilders.post("/users/{userId}/events", "1")
+        String response = mvc.perform(post("/users/{userId}/events", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(mapper.writeValueAsString(newEventDto)))
@@ -115,7 +119,7 @@ class PrivateEventControllerTest {
                 .paid(true)
                 //      .participantLimit(0).requestModeration(true)
                 .title("test").build();
-        mvc.perform(MockMvcRequestBuilders.post("/users/{userId}/events", "1")
+        mvc.perform(post("/users/{userId}/events", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(mapper.writeValueAsString(newEventDto)))
@@ -127,8 +131,44 @@ class PrivateEventControllerTest {
     @Test
     void getEvent() {
         when(service.getEventByIdByUser(anyLong(), anyLong())).thenThrow(new NoFoundObjectException("1"));
-        mvc.perform(MockMvcRequestBuilders.get("/users/{userId}/events/{eventId}", "1", "2"))
+        mvc.perform(get("/users/{userId}/events/{eventId}", "1", "2"))
 
                 .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    @SneakyThrows
+    void conformRequestsByUser() {
+        EventRequestStatusUpdateRequest req = EventRequestStatusUpdateRequest.builder()
+                .requestIds(List.of(1L))
+                .status(RequestStatus.REJECTED)
+                .build();
+        EventRequestStatusUpdateResponse resp = EventRequestStatusUpdateResponse.builder().build();
+        when(service.conformRequestsByUser(anyLong(), anyLong(), any()))
+                .thenReturn(resp);
+        mvc.perform(patch("/users/{userId}/events/{eventId}/requests", "1", "2")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(mapper.writeValueAsString(req)))
+                .andExpect(status().is2xxSuccessful());
+        verify(service).conformRequestsByUser(1L, 2L, req);
+    }
+
+    @Test
+    @SneakyThrows
+    void conformRequestsByUser_sendInBodyBadStatus_ReturnException() {
+        EventRequestStatusUpdateRequest req = EventRequestStatusUpdateRequest.builder()
+                .requestIds(List.of(1L))
+                .status(RequestStatus.PENDING)
+                .build();
+        EventRequestStatusUpdateResponse resp = EventRequestStatusUpdateResponse.builder().build();
+        when(service.conformRequestsByUser(anyLong(), anyLong(), any()))
+                .thenReturn(resp);
+        mvc.perform(patch("/users/{userId}/events/{eventId}/requests", "1", "2")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(mapper.writeValueAsString(req)))
+                .andExpect(status().is4xxClientError());
+        verifyNoInteractions(service);
     }
 }

@@ -23,7 +23,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND e.state IN (?2) OR (?2) IS NULL " +
             "AND e.category.id IN (?3) OR (?3) IS NULL " +
             "AND e.createdOn BETWEEN ?4 AND ?5")
-    List<Event> findByManyParam(List<Long> users, List<State> states, List<Long> categories, LocalDateTime start, LocalDateTime end, Pageable pageable);
+    List<Event> findByManyParam(
+            List<Long> users, List<State> states, List<Long> categories, LocalDateTime start,
+            LocalDateTime end, Pageable pageable);
 
     @Query("SELECT e FROM Event AS e " +
             "WHERE LOWER(e.annotation) LIKE LOWER(CONCAT('%', ?1, '%')) " +
@@ -34,7 +36,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND e.createdOn BETWEEN ?4 AND ?5 " +
             "AND e.confirmedRequests <= e.participantLimit OR (?6) IS FALSE " +
             "ORDER BY e.createdOn DESC ")
-    List<Event> findByManyParams(String text, List<Long> categories, Boolean paid, LocalDateTime start, LocalDateTime end, Boolean onlyAvailable, Pageable pageable);
+    List<Event> findByManyParams(
+            String text, List<Long> categories, Boolean paid, LocalDateTime start,
+            LocalDateTime end, Boolean onlyAvailable, Pageable pageable);
 
     Optional<Event> findByIdAndState(Long eventId, State state);
 }

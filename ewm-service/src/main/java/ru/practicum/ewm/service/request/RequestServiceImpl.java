@@ -39,15 +39,16 @@ public class RequestServiceImpl implements RequestService {
         //проверяем существует ли пользователь
         userService.getUserByIdIfExist(userId);
 
-        return listMapper.modelsToDtos(repository.findAllByRequesterId(userId));
+        List<ParticipationRequest> reqList = repository.findAllByRequesterId(userId);
+        return listMapper.modelsToDtos(reqList);
     }
 
     /**
      * Добавление запроса текущего пользователя на участие в событии
-     * нельзя добавить повторный запрос (Ожидается код ошибки 409)
-     * инициатор события не может добавить запрос на участие в своём событии (Ожидается код ошибки 409)
-     * нельзя участвовать в неопубликованном событии (Ожидается код ошибки 409)
-     * если у события достигнут лимит запросов на участие - необходимо вернуть ошибку (Ожидается код ошибки 409)
+     * нельзя добавить повторный запрос
+     * инициатор события не может добавить запрос на участие в своём событии
+     * нельзя участвовать в неопубликованном событии
+     * если у события достигнут лимит запросов на участие - необходимо вернуть ошибку
      * если для события отключена пре-модерация запросов на участие, то запрос должен автоматически перейти в
      * состояние подтвержденного
      */
@@ -62,7 +63,8 @@ public class RequestServiceImpl implements RequestService {
         ParticipationRequest request = longMapper.longToModel(user, event);
 
         // сохраняем сущность и проверяем её уникальность
-        return mapper.modelToDto(repository.save(request));
+        ParticipationRequest req = repository.save(request);
+        return mapper.modelToDto(req);
     }
 
     /**
@@ -80,6 +82,8 @@ public class RequestServiceImpl implements RequestService {
                     " реквестор c id: '%s'", requestId, userId));
         //Отклоняем заявку
         request.setStatus(RequestStatus.CANCELED);
-        return mapper.modelToDto(repository.save(request));
+        //Сохраняем результат
+        ParticipationRequest req = repository.save(request);
+        return mapper.modelToDto(req);
     }
 }

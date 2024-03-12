@@ -47,8 +47,9 @@ public class EventListMapper {
         // мапим объект
         List<EventShortDto> dtos = new ArrayList<>();
         for (Event event : events) {
-            dtos.add(mapper
-                    .modelToShortDto(event, hitsMap.containsKey(event.getId()) ? hitsMap.get(event.getId()) : 0L));
+            long views = hitsMap.containsKey(event.getId()) ? hitsMap.get(event.getId()) : 0L;
+            EventShortDto dto = mapper.modelToShortDto(event, views);
+            dtos.add(dto);
         }
         return dtos;
     }
@@ -73,7 +74,9 @@ public class EventListMapper {
         // мапим объект
         List<EventFullDto> dtos = new ArrayList<>();
         for (Event event : events) {
-            dtos.add(mapper.modelToDto(event, hitsMap.containsKey(event.getId()) ? hitsMap.get(event.getId()) : 0L));
+            long views = hitsMap.containsKey(event.getId()) ? hitsMap.get(event.getId()) : 0L;
+            EventFullDto dto = mapper.modelToDto(event, views);
+            dtos.add(dto);
         }
         return dtos;
     }

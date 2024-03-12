@@ -31,8 +31,8 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public List<CompilationDto> getCompilationsPublic(boolean pinned, Pageable pageable) {
-
-        return listMapper.modelsToDtos(repository.getCompilationByPinned(pinned, pageable));
+        List<Compilation> compilations = repository.getCompilationByPinned(pinned, pageable);
+        return listMapper.modelsToDtos(compilations);
     }
 
     /**
@@ -40,9 +40,9 @@ public class CompilationServiceImpl implements CompilationService {
      */
     @Override
     public CompilationDto getCompilationByIdPublic(long compId) {
-        return mapper.modelToDto(repository.findById(compId)
-                .orElseThrow(() -> new NoFoundObjectException(String.format("Подборка " +
-                        "с id '%s' отсутствует", compId))));
+        Compilation compilation = repository.findById(compId).orElseThrow(() ->
+                new NoFoundObjectException(String.format("Подборка с id '%s' отсутствует", compId)));
+        return mapper.modelToDto(compilation);
     }
 
     /**
@@ -50,15 +50,17 @@ public class CompilationServiceImpl implements CompilationService {
      */
     @Override
     public CompilationDto add(NewCompilationDto dto) {
-        return mapper.modelToDto(repository.save(mapper.dtoToModel(dto)));
+        Compilation compilation = mapper.dtoToModel(dto);
+        Compilation saveResultsCat = repository.save(compilation);
+        return mapper.modelToDto(saveResultsCat);
     }
 
     /**
-     * Удаление иподборки событий
+     * Удаление подборки событий
      */
     @Override
-    @Transactional
     public void delete(long compId) {
+        //проверяем Валидность compId
         getCompilationByIdPublic(compId);
         repository.deleteById(compId);
 

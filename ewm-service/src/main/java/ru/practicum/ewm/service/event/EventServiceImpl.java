@@ -59,25 +59,28 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> getEventsByUser(long userId, PageRequest pageRequest) {
         List<Event> events = repository.findAllByInitiatorId(userId, pageRequest);
-        //запрос статистики и сохранение результата
-        List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(events));
-        return listMapper.modelsToDtos(events, list);
+        //запрос статистики и формирование ответа
+        List<String> uris = uriMapper.modelsToUris(events);
+        List<ViewStatsDto> viewStatsDtoList = multiClient.readStat(uris);
+        return listMapper.modelsToDtos(events, viewStatsDtoList);
     }
 
     /**
      * Добавление нового события
      */
     @Override
-    @Transactional
     public EventFullDto saveEvent(long userId, NewEventDto newEventDto) {
         //Валидация входных данных
         userService.getUserByIdIfExist(userId);
         categoryService.findCatById(newEventDto.getCategory());
         //сохраняем
-        Event event = repository.save(mapper.dtoToModel(newEventDto, userId));
+        Event event = mapper.dtoToModel(newEventDto, userId);
+        Event saveResultsEvent = repository.save(event);
         //формируем ответ
-        List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(List.of(event)));
-        return mapper.modelToDto(event, list.isEmpty() ? 0L : list.get(0).getHits());
+        List<String> uris = uriMapper.modelsToUris(List.of(saveResultsEvent));
+        List<ViewStatsDto> list = multiClient.readStat(uris);
+        long views = list.isEmpty() ? 0L : list.get(0).getHits();
+        return mapper.modelToDto(saveResultsEvent, views);
     }
 
     /**
@@ -85,13 +88,15 @@ public class EventServiceImpl implements EventService {
      * В случае, если события с заданным id не найдено, возвращается ошибка
      */
     @Override
-    @Transactional
     public EventFullDto getEventByIdByUser(long userId, long eventId) {
-        Event event = repository.findByInitiatorIdAndId(userId, eventId)
-                .orElseThrow(() -> new NoFoundObjectException(String.format(
+        Event event = repository.findByInitiatorIdAndId(userId, eventId).orElseThrow(() ->
+                new NoFoundObjectException(String.format(
                         "Событие с id='%s' у пользователя с id='%s' не найдено", eventId, userId)));
-        List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(List.of(event)));
-        return mapper.modelToDto(event, list.isEmpty() ? 0L : list.get(0).getHits());
+        //формируем ответ
+        List<String> uris = uriMapper.modelsToUris(List.of(event));
+        List<ViewStatsDto> list = multiClient.readStat(uris);
+        long views = list.isEmpty() ? 0L : list.get(0).getHits();
+        return mapper.modelToDto(event, views);
     }
 
     /**
@@ -100,19 +105,22 @@ public class EventServiceImpl implements EventService {
      * дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента
      */
     @Override
-    @Transactional
     public EventFullDto patchEventByUser(long userId, long eventId, UpdateEventUserRequest updateEventUserRequest) {
         //валидация входных данных
-        Event event = repository.findByInitiatorIdAndId(userId, eventId)
-                .orElseThrow(() -> new NoFoundObjectException(String.format(
+        Event event = repository.findByInitiatorIdAndId(userId, eventId).orElseThrow(() ->
+                new NoFoundObjectException(String.format(
                         "Событие с id='%s' у пользователя с id='%s' не найдено", eventId, userId)));
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))
-                || event.getState().equals(PUBLISHED)) throw new BaseRelationshipException(
+                || event.getState() == PUBLISHED) throw new BaseRelationshipException(
                 String.format("Событие с id='%s' не может быть изменено", eventId));
         //обновление и сохранение результата
-        Event eventNew = repository.save(patcher.userPatch(event, updateEventUserRequest));
-        List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(List.of(eventNew)));
-        return mapper.modelToDto(eventNew, list.isEmpty() ? 0L : list.get(0).getHits());
+        Event patchEvent = patcher.userPatch(event, updateEventUserRequest);
+        Event saveResultsEvent = repository.save(patchEvent);
+        //формируем ответ
+        List<String> uris = uriMapper.modelsToUris(List.of(saveResultsEvent));
+        List<ViewStatsDto> list = multiClient.readStat(uris);
+        long views = list.isEmpty() ? 0L : list.get(0).getHits();
+        return mapper.modelToDto(saveResultsEvent, views);
     }
 
     /**
@@ -120,7 +128,6 @@ public class EventServiceImpl implements EventService {
      * В случае, если по заданным фильтрам не найдено ни одной заявки, возвращает пустой список
      */
     @Override
-    @Transactional
     public List<ParticipationRequestDto> getRequestsByEventIdByUser(long userId, long eventId) {
         //Валидация входных данных
         User user = userService.getUserByIdIfExist(userId);
@@ -129,7 +136,8 @@ public class EventServiceImpl implements EventService {
             throw new BaseRelationshipException(String.format("Пользователь с id '%ы' не является иницматором " +
                     "события с id '%s'", userId, eventId));
         //формирование ответа
-        return requestListMapper.modelsToDtos(requestRepository.findAllByEventId(eventId));
+        List<ParticipationRequest> requests = requestRepository.findAllByEventId(eventId);
+        return requestListMapper.modelsToDtos(requests);
     }
 
     /**
@@ -141,10 +149,8 @@ public class EventServiceImpl implements EventService {
      * то все неподтверждённые заявки необходимо отклонить
      */
     @Override
-    @Transactional
-    public EventRequestStatusUpdateResponse conformRequestsByUser(long userId,
-                                                                  long eventId,
-                                                                  EventRequestStatusUpdateRequest request) {
+    public EventRequestStatusUpdateResponse conformRequestsByUser(
+            long userId, long eventId, EventRequestStatusUpdateRequest updateRequests) {
         //проверяем входные данные
         User user = userService.getUserByIdIfExist(userId);
         Event event = getAndCheckEventById(eventId);
@@ -152,30 +158,29 @@ public class EventServiceImpl implements EventService {
             throw new BaseRelationshipException(String.format("Пользователь" +
                     " с Id '%s' не инициатор события с id '%s'", userId, eventId));
         //рассматриваем заявки
-        List<ParticipationRequest> waitList = requestRepository.findAllByIds(request.getRequestIds());
+        List<ParticipationRequest> waitList = requestRepository.findAllByIds(updateRequests.getRequestIds());
         List<ParticipationRequest> confirmed = new ArrayList<>();
         List<ParticipationRequest> rejected = new ArrayList<>();
-        if (request.getStatus().equals(RequestStatus.REJECTED)) {
+        if (updateRequests.getStatus() == RequestStatus.REJECTED) {
             while (waitList.size() > 0) {
                 ParticipationRequest req = waitList.remove(0);
-                if (req.getStatus().equals(RequestStatus.CONFIRMED))
+                if (req.getStatus() == RequestStatus.CONFIRMED)
                     throw new BaseRelationshipException(String.format("нельзя отменить " +
                             "принятую заявку с id '%s'", req.getId()));
-                if (req.getStatus().equals(RequestStatus.PENDING)) req.setStatus(RequestStatus.REJECTED);
+                if (req.getStatus() == RequestStatus.PENDING) req.setStatus(RequestStatus.REJECTED);
                 rejected.add(req);
             }
-        } else { //RequestStatus.CONFIRMED
+        } else { //updateRequests.getStatus() == RequestStatus.CONFIRMED
             int freePlaces = event.getParticipantLimit() - event.getConfirmedRequests();
             if (freePlaces <= 0)
                 throw new BaseRelationshipException(String.format("Лимит участников события с id '%s' достигнут", eventId));
             while (confirmed.size() <= freePlaces) {
-                if (waitList.size() != 0) {
-                    ParticipationRequest req = waitList.remove(0);
-                    if (req.getStatus().equals(RequestStatus.PENDING)) {
-                        req.setStatus(RequestStatus.CONFIRMED);
-                        confirmed.add(req);
-                    }
-                } else break;
+                if (waitList.size() <= 0) break;
+                ParticipationRequest req = waitList.remove(0);
+                if (req.getStatus() == RequestStatus.PENDING) {
+                    req.setStatus(RequestStatus.CONFIRMED);
+                    confirmed.add(req);
+                }
             }
             while (waitList.size() > 0) { //Если заявок больше чем свободных мест
                 ParticipationRequest req = waitList.remove(0);
@@ -197,11 +202,14 @@ public class EventServiceImpl implements EventService {
      * В случае, если по заданным фильтрам не найдено ни одного события, возвращает пустой список
      */
     @Override
-    @Transactional
-    public List<EventFullDto> getEventsByAdmin(List<Long> users, List<State> states, List<Long> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, PageRequest pageRequest) {
+    public List<EventFullDto> getEventsByAdmin(
+            List<Long> users, List<State> states, List<Long> categories, LocalDateTime rangeStart,
+            LocalDateTime rangeEnd, PageRequest pageRequest) {
         List<Event> events = repository.findByManyParam(users, states, categories, rangeStart, rangeEnd, pageRequest);
-        List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(events));
-        return listMapper.modelsToFullDtos(events, list);
+        //запрос статистики и формирование ответа
+        List<String> uris = uriMapper.modelsToUris(events);
+        List<ViewStatsDto> viewStatsDtoList = multiClient.readStat(uris);
+        return listMapper.modelsToFullDtos(events, viewStatsDtoList);
     }
 
     /**
@@ -219,45 +227,53 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NoFoundObjectException(String.format(
                         "Событие с id='%s'  не найдено", eventId)));
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))
-                || event.getState().equals(PUBLISHED) || event.getState().equals(CANCELED))
+                || event.getState() == PUBLISHED || event.getState() == CANCELED)
             throw new BaseRelationshipException(
                     String.format("Событие с id='%s' не может быть изменено", eventId));
         //обновляем и сохраняем
-        Event eventNew = repository.save(patcher.adminPatch(event, updateEventAdminRequest));
-        List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(List.of(eventNew)));
-        return mapper.modelToDto(eventNew, list.isEmpty() ? 0L : list.get(0).getHits());
+        Event patchEvent = patcher.adminPatch(event, updateEventAdminRequest);
+        Event saveResultsEvent = repository.save(patchEvent);
+        //запрос статистики и формирование ответа
+        List<String> uris = uriMapper.modelsToUris(List.of(saveResultsEvent));
+        List<ViewStatsDto> list = multiClient.readStat(uris);
+        long views = list.isEmpty() ? 0L : list.get(0).getHits();
+        return mapper.modelToDto(saveResultsEvent, views);
 
     }
 
     /**
-     * метод для валидвции eventId по базе данных
+     * метод для валидации eventId по базе данных
      */
     @Override
-    @Transactional
     public Event getAndCheckEventById(Long eventId) {
-        Event event = repository.findById(eventId)
-                .orElseThrow(() -> new NoFoundObjectException(String.format(
-                        "Событие с id='%s'  не найдено", eventId)));
+        Event event = repository.findById(eventId).orElseThrow(() ->
+                new NoFoundObjectException(String.format("Событие с id='%s' не найдено", eventId)));
         return event;
     }
 
     /**
+     * публичный поиск по событиям
      * выдаются только опубликованные события
-     * текстовый поиск (по аннотации и подробному описанию)  без учета регистра букв
-     * информация о каждом событии должна включать в себя количество просмотров и количество уже одобренных заявок на участие
-     * информацию о том, что по этому эндпоинту был осуществлен и обработан запрос, нужно сохранить в сервисе статистики
+     * текстовый поиск (по аннотации и подробному описанию) без учета регистра букв
      * В случае, если по заданным фильтрам не найдено ни одного события, возвращает пустой список
+     *
+     * @param onlyAvailable true для событий без ограничения числа участников, либо на это событие еще можно подать
+     *                      заявку
+     * @param sort          Варианты сортировки. EVENT_DATE по дате или VIEWS по числу просмотров
      */
+
     @Override
-    @Transactional
-    public List<EventShortDto> getAllEvents(String text, List<Long> categories, Boolean paid, LocalDateTime startDate,
-                                            LocalDateTime endDate, Boolean onlyAvailable, SortVariant sort,
-                                            PageRequest pageRequest) {
+    public List<EventShortDto> getAllEvents(
+            String text, List<Long> categories, Boolean paid, LocalDateTime startDate,
+            LocalDateTime endDate, Boolean onlyAvailable, SortVariant sort,
+            PageRequest pageRequest) {
         List<Event> events = repository.findByManyParams(text, categories, paid, startDate, endDate,
                 onlyAvailable, pageRequest);
-        List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(events));
-        List<EventShortDto> dtoList = listMapper.modelsToDtos(events, list);
-        if (sort.equals(SortVariant.VIEWS)) {
+        //Запрос статистики и формирование ответа
+        List<String> uris = uriMapper.modelsToUris(events);
+        List<ViewStatsDto> viewStatsDtoList = multiClient.readStat(uris);
+        List<EventShortDto> dtoList = listMapper.modelsToDtos(events, viewStatsDtoList);
+        if (sort == SortVariant.VIEWS) {
             dtoList.sort(Comparator.comparing(EventShortDto::getViews));
         }
         return dtoList;
@@ -268,9 +284,12 @@ public class EventServiceImpl implements EventService {
      */
     @Override
     public EventFullDto getEventById(Long eventId) {
-        Event event = repository.findByIdAndState(eventId, PUBLISHED)
-                .orElseThrow(() -> new NoFoundObjectException(String.format("Событие с Id '%s' не найдено", eventId)));
-        List<ViewStatsDto> list = multiClient.readStat(uriMapper.modelsToUris(List.of(event)));
-        return mapper.modelToDto(event, list.isEmpty() ? 0L : list.get(0).getHits());
+        Event event = repository.findByIdAndState(eventId, PUBLISHED).orElseThrow(() ->
+                new NoFoundObjectException(String.format("Событие с Id '%s' не найдено", eventId)));
+        //Запрос статистики и формирование ответа
+        List<String> uris = uriMapper.modelsToUris(List.of(event));
+        List<ViewStatsDto> list = multiClient.readStat(uris);
+        long views = list.isEmpty() ? 0L : list.get(0).getHits();
+        return mapper.modelToDto(event, views);
     }
 }

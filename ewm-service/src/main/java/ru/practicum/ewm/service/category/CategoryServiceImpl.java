@@ -26,7 +26,9 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public CategoryDto saveCategory(CategoryDto categoryDto) {
-        return mapper.modelToDto(repository.save(mapper.dtoToModel(categoryDto)));
+        Category category = mapper.dtoToModel(categoryDto);
+        Category saveResultCat = repository.save(category);
+        return mapper.modelToDto(saveResultCat);
     }
 
     /**
@@ -38,9 +40,11 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = repository.findById(catId).orElseThrow(()
                 -> new NoFoundObjectException(String.format("Category with id=%s was not found", catId)));
 
-        return mapper.modelToDto(repository.save(Category.builder()
+        Category patchedCat = Category.builder()
                 .id(category.getId())
-                .name(patch.getName()).build()));
+                .name(patch.getName()).build();
+        Category saveResultCat = repository.save(patchedCat);
+        return mapper.modelToDto(saveResultCat);
     }
 
     /**
@@ -48,8 +52,8 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public void deleteCategory(long categoryId) {
-
-        if (repository.deleteByIdAndReturnCount(categoryId) == 0)
+        int deleteResult = repository.deleteByIdAndReturnCount(categoryId);
+        if (deleteResult == 0)
             throw new NoFoundObjectException(String.format("Категория с id='%s' не найден", categoryId));
     }
 
@@ -58,7 +62,8 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public List<CategoryDto> findAllCat(Pageable pageable) {
-        return listMapper.modelsToDtos(repository.findAll(pageable).getContent());
+        List<Category> categories = repository.findAll(pageable).getContent();
+        return listMapper.modelsToDtos(categories);
     }
 
     /**
@@ -66,7 +71,8 @@ public class CategoryServiceImpl implements CategoryService {
      */
     @Override
     public CategoryDto findCatById(long id) {
-        return mapper.modelToDto(repository.findById(id).orElseThrow(()
-                -> new NoFoundObjectException(String.format("Category with id=%s was not found", id))));
+        Category category = repository.findById(id).orElseThrow(()
+                -> new NoFoundObjectException(String.format("Category with id=%s was not found", id)));
+        return mapper.modelToDto(category);
     }
 }

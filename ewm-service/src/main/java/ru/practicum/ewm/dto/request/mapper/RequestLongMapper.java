@@ -18,13 +18,13 @@ public class RequestLongMapper {
             throw new BaseRelationshipException(String.format("Лимит участников события c Id '%s' исчерпан", event.getId()));
         if (event.getInitiator().equals(user))
             throw new BaseRelationshipException(String.format("Организатору события c Id '%s' нельзя в нем учавствовать", event.getId()));
-        if (event.getState().equals(PENDING) || event.getState().equals(CANCELED))
+        if (event.getState() == PENDING || event.getState() == CANCELED)
             throw new BaseRelationshipException(String.format("Событие c Id '%s' не опубликовано", event.getId()));
 
         ParticipationRequest.ParticipationRequestBuilder request = ParticipationRequest.builder();
         request.event(event);
         request.requester(user);
-        if (event.getRequestModeration().equals(false) || (event.getParticipantLimit() == 0))
+        if (event.getRequestModeration() == false || event.getParticipantLimit() == 0)
             request.status(RequestStatus.CONFIRMED);
 
         return request.build();
