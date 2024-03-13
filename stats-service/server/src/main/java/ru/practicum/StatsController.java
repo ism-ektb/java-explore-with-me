@@ -2,6 +2,7 @@ package ru.practicum;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.annotation.ValidStartIsBeforeEnd;
@@ -25,7 +26,8 @@ public class StatsController {
     @GetMapping(path = "/stats")
     @ValidStartIsBeforeEnd
     public List<ViewStatsDto> getStats(@RequestParam LocalDateTime start,
-                                       @RequestParam LocalDateTime end,
+                                       @RequestParam(required = false,
+                                               defaultValue = "#{T(java.time.LocalDateTime).now()}") LocalDateTime end,
                                        @RequestParam(required = false) List<String> uris,
                                        @RequestParam(defaultValue = "false") Boolean unique) {
         return service.getStats(start, end, uris, unique);
@@ -37,6 +39,7 @@ public class StatsController {
      * на сообветствие формату. Дата должна передаваться в формате yyyy-MM-dd HH:mm:ss
      */
     @PostMapping("/hit")
+    @ResponseStatus(HttpStatus.CREATED)
     public EndPointHitDto save(@RequestBody @Valid EndPointHitDto endPointHitDto) {
         return service.save(endPointHitDto);
     }

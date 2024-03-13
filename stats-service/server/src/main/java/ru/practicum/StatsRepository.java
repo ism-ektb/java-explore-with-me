@@ -15,7 +15,7 @@ public interface StatsRepository extends JpaRepository<EndPointHit, Long> {
             "WHERE eh.timestamp BETWEEN ?1 AND ?2 " +
             "AND (eh.uri IN (?3) OR (?3) is NULL) " +
             "GROUP BY eh.app, eh.uri " +
-            "ORDER BY COUNT(DISTINCT eh.ip) DESC ")
+            "ORDER BY eh.uri DESC ")
     List<ViewStats> getStatsIpUnique(LocalDateTime start, LocalDateTime end, List<String> uris);
 
     @Query("SELECT new ru.practicum.model.ViewStats(eh.app, eh.uri, COUNT(eh.ip)) " +
@@ -23,6 +23,6 @@ public interface StatsRepository extends JpaRepository<EndPointHit, Long> {
             "WHERE eh.timestamp BETWEEN ?1 AND ?2 " +
             "AND (eh.uri IN (?3) OR (?3) is NULL) " +
             "GROUP BY eh.app, eh.uri " +
-            "ORDER BY COUNT(eh.ip) DESC")
+            "ORDER BY eh.uri DESC")
     List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris);
 }

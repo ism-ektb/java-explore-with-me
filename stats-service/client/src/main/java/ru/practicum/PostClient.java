@@ -8,14 +8,17 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
+
 public class PostClient implements Runnable {
+    private final String server;
     private RestTemplate restTemplate;
     private EndPointHitDto endPointHitDto;
 
 
-    public PostClient(RestTemplate restTemplate, EndPointHitDto endPointHitDto) {
+    public PostClient(RestTemplate restTemplate, EndPointHitDto endPointHitDto, String server) {
         this.restTemplate = restTemplate;
         this.endPointHitDto = endPointHitDto;
+        this.server = server;
     }
 
     @Override
@@ -24,13 +27,13 @@ public class PostClient implements Runnable {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<EndPointHitDto> requestEntity = new HttpEntity<>(endPointHitDto, headers);
+        String uri = server + "/hit";
         try {
-            restTemplate.exchange("http://localhost:9090/hit", HttpMethod.POST,
+            restTemplate.exchange(uri, HttpMethod.POST,
                     requestEntity, EndPointHitDto.class);
             log.info("Успех! Hit {} сохранен в статистике", endPointHitDto.toString());
         } catch (Exception e) {
             log.warn("Ошибка сохранения данных с статистику: {}", e.getMessage());
         }
     }
-
 }
