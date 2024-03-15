@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.practicum.MultiClient;
 import ru.practicum.ewm.dto.event.EventShortDto;
+import ru.practicum.ewm.service.comment.CommentService;
 import ru.practicum.ewm.service.event.EventService;
 
 import java.util.List;
@@ -27,6 +28,8 @@ class PublicEventControllerTest {
     private EventService service;
     @MockBean
     private MultiClient multiClient;
+    @MockBean
+    private CommentService commentService;
 
     @Test
     @SneakyThrows

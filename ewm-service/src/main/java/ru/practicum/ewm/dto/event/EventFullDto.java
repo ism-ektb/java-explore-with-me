@@ -7,9 +7,9 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.jackson.Jacksonized;
 import ru.practicum.ewm.dto.category.CategoryDto;
+import ru.practicum.ewm.dto.comment.CommentForEventDto;
 import ru.practicum.ewm.dto.event.enums.State;
 import ru.practicum.ewm.dto.location.LocationDto;
-import ru.practicum.ewm.dto.request.RequestStatus;
 import ru.practicum.ewm.dto.user.UserShortDto;
 
 import java.time.LocalDateTime;
@@ -40,12 +40,6 @@ public class EventFullDto {
     private State state;
     private String title;
     private long views;
-
-    @Getter
-    @Builder
-    public static class EventRequestStatusUpdateRequest {
-        private List<Long> requestIds;
-        private RequestStatus status;
-    }
+    private List<CommentForEventDto> comments;
 }
 

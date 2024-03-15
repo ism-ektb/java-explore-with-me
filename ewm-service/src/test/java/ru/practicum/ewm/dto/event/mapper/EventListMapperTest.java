@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.practicum.ViewStatsDto;
 import ru.practicum.ewm.dto.category.mapper.CategoryMapperImpl;
+import ru.practicum.ewm.dto.comment.mapper.CommentListMapperImpl;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.dto.location.mapper.LocationMapperImpl;
 import ru.practicum.ewm.dto.user.mapper.UserMapperImpl;
@@ -18,7 +19,7 @@ class EventListMapperTest {
     void modelsToDtos() {
 
         EventListMapper mapper = new EventListMapper(new EventMapperImpl(new CategoryMapperImpl(), new LocationMapperImpl(),
-                new UserMapperImpl()));
+                new UserMapperImpl(), new CommentListMapperImpl()));
 
         Event event = Event.builder().id(1L).build();
         ViewStatsDto viewStatsDto = ViewStatsDto.builder().uri("event/1").hits(220L).build();
@@ -31,7 +32,7 @@ class EventListMapperTest {
     void modelsToDtos_BadStat() {
 
         EventListMapper mapper = new EventListMapper(new EventMapperImpl(new CategoryMapperImpl(), new LocationMapperImpl(),
-                new UserMapperImpl()));
+                new UserMapperImpl(), new CommentListMapperImpl()));
 
         Event event = Event.builder().id(1L).build();
         ViewStatsDto viewStatsDto = ViewStatsDto.builder().uri("event/1tt").hits(220L).build();
@@ -43,7 +44,7 @@ class EventListMapperTest {
     @Test
     void modelsToDtos_longUri() {
         EventListMapper mapper = new EventListMapper(new EventMapperImpl(new CategoryMapperImpl(), new LocationMapperImpl(),
-                new UserMapperImpl()));
+                new UserMapperImpl(), new CommentListMapperImpl()));
 
         Event event = Event.builder().id(1L).build();
         ViewStatsDto viewStatsDto = ViewStatsDto.builder().uri("user/event/1").hits(220L).build();
@@ -56,7 +57,7 @@ class EventListMapperTest {
     void modelsToDtos_isNotStat() {
 
         EventListMapper mapper = new EventListMapper(new EventMapperImpl(new CategoryMapperImpl(), new LocationMapperImpl(),
-                new UserMapperImpl()));
+                new UserMapperImpl(), new CommentListMapperImpl()));
 
         Event event = Event.builder().id(1L).build();
         ViewStatsDto viewStatsDto = ViewStatsDto.builder().uri("event/5").hits(220L).build();

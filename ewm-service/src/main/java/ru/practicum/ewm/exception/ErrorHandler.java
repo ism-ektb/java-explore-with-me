@@ -38,10 +38,10 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(BaseRelationshipException.class)
-    @ResponseStatus(value = HttpStatus.CONFLICT, reason = "The required object was not found.")
+    @ResponseStatus(value = HttpStatus.CONFLICT)
     public ErrorResponse onBaseRelationshipException(BaseRelationshipException e) {
         log.warn(e.getMessage());
-        return new ErrorResponse(List.of(new Error("The required object was not found.", e.getMessage())));
+        return new ErrorResponse(List.of(new Error("message", e.getMessage())));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

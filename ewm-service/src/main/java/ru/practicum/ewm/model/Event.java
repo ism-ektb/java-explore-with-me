@@ -7,6 +7,7 @@ import ru.practicum.ewm.dto.event.enums.State;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -49,5 +50,7 @@ public class Event {
     private String title;
     @Formula(value = "(SELECT COUNT(r.id) FROM requests as r WHERE r.event_id = id AND r.status LIKE 'CONFIRMED')")
     private Integer confirmedRequests;
+    @OneToMany(mappedBy = "event")
+    private List<Comment> comments;
 
 }

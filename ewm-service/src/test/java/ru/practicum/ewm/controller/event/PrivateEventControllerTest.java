@@ -38,9 +38,6 @@ class PrivateEventControllerTest {
     @MockBean
     private EventService service;
 
-//    @MockBean
-//    MultiClient multiClient;
-
     @Test
     @SneakyThrows
     void saveEvent_whenDefaultValuePaid_thenReturnOk() {

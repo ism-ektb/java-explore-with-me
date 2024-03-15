@@ -4,6 +4,7 @@ import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import ru.practicum.ewm.dto.category.mapper.CategoryMapper;
+import ru.practicum.ewm.dto.comment.mapper.CommentListMapper;
 import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.dto.event.NewEventDto;
@@ -12,7 +13,8 @@ import ru.practicum.ewm.dto.user.mapper.UserMapper;
 import ru.practicum.ewm.model.Event;
 
 @Mapper(componentModel = "spring", uses = {CategoryMapper.class,
-        LocationMapper.class, UserMapper.class}, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
+        LocationMapper.class, UserMapper.class, CommentListMapper.class},
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface EventMapper {
 
     @Mapping(source = "userId", target = "initiator")

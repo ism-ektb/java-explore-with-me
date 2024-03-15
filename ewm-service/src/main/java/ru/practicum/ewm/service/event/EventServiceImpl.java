@@ -285,7 +285,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto getEventById(Long eventId) {
         Event event = repository.findByIdAndState(eventId, PUBLISHED).orElseThrow(() ->
-                new NoFoundObjectException(String.format("Событие с Id '%s' не найдено", eventId)));
+                new NoFoundObjectException(String.format("Событие с Id '%s' не найдено или не опубликовано", eventId)));
         //Запрос статистики и формирование ответа
         List<String> uris = uriMapper.modelsToUris(List.of(event));
         List<ViewStatsDto> list = multiClient.readStat(uris);

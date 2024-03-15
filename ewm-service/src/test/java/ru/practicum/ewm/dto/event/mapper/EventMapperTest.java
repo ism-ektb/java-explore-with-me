@@ -3,6 +3,7 @@ package ru.practicum.ewm.dto.event.mapper;
 import org.junit.jupiter.api.Test;
 import ru.practicum.ewm.dto.category.CategoryDto;
 import ru.practicum.ewm.dto.category.mapper.CategoryMapperImpl;
+import ru.practicum.ewm.dto.comment.mapper.CommentListMapperImpl;
 import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.NewEventDto;
 import ru.practicum.ewm.dto.event.enums.State;
@@ -22,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class EventMapperTest {
 
     private final EventMapper mapper = new EventMapperImpl(new CategoryMapperImpl(),
-            new LocationMapperImpl(), new UserMapperImpl());
+            new LocationMapperImpl(), new UserMapperImpl(), new CommentListMapperImpl());
 
     @Test
     void modelToDto() {
