@@ -5,9 +5,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
 import ru.practicum.ewm.dto.category.CategoryDto;
+import ru.practicum.ewm.dto.comment.CommentForEventDto;
 import ru.practicum.ewm.dto.user.UserShortDto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Builder
 @Getter
@@ -23,5 +25,6 @@ public class EventShortDto {
     private boolean paid;
     private String title;
     private long views;
+    private List<CommentForEventDto> comments;
 }
 

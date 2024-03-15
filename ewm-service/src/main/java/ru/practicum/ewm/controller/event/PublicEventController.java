@@ -10,13 +10,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.MultiClient;
 import ru.practicum.ewm.annotation.startBeforEnd.ValidStartIsBeforeEnd;
+import ru.practicum.ewm.dto.comment.CommentDto;
 import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.dto.event.enums.SortVariant;
+import ru.practicum.ewm.service.comment.CommentService;
 import ru.practicum.ewm.service.event.EventService;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import java.util.List;
 public class PublicEventController {
 
     private final EventService service;
+    private final CommentService commentService;
     private final MultiClient multiClient;
 
     @GetMapping("/events")
@@ -55,7 +57,6 @@ public class PublicEventController {
         return service.getAllEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, PageRequest.of(from / size, size));
     }
 
-    @Transactional
     @GetMapping("events/{eventId}")
     public EventFullDto getEvent(@PathVariable long eventId,
                                  HttpServletRequest request) {
@@ -63,4 +64,8 @@ public class PublicEventController {
         return service.getEventById(eventId);
     }
 
+    @GetMapping("events/{eventId}/comments")
+    public List<CommentDto> getEvent(@PathVariable long eventId) {
+        return commentService.getListCommentById(eventId);
+    }
 }
