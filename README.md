@@ -1,9 +1,10 @@
-# Explore With Me. REST приложение для организации волонтерских мероприятий. Поиск участкиков, подписка, отзывы о проектах.
+# Explore With Me. 
+## REST приложение для организации волонтерских мероприятий. Поиск участников, подписка, отзывы о проектах.
 
 
 ## Описание:
 
-Бэкенд сервиса, который позволяет организовывать волонтерсеие проекты. Пример интерфейса:
+Бэкенд сервиса, который позволяет организовывать волонтёрские проекты. Пример интерфейса:
 
 ![Alt text](https://github.com/ism-ektb/java-explore-with-me/blob/main/WebInterfaceExample.png)
 
@@ -31,7 +32,7 @@
 #### Сервис статистики:
 * Информация о количестве обращений пользователей к спискам событий. 
 * Информация о количестве запросов к подробной информации о событии. 
-* Отчет по собраной ринформации.
+* Отчет по собранной информации.
 
 ## Спецификация:
 
@@ -43,19 +44,20 @@
 
 -  Data Access Object (DAO);
 -  объекты DAO создаются с помощью паттерна "Фабрика";
--  oбъекты отображаются в базе данных с помощью паттерна «Отображение данных» (Data Mapper);
+-  объекты отображаются в базе данных с помощью паттерна «Отображение данных» (Data Mapper);
 -  объекты скрываются от пользователя с помощью паттерна Data Transfer Object(DTO).
 
 ## Тестирование проекта:
 
 Проверить работоспособность приложения, можно с помощью [готовой коллекции тестов](https://github.com/ism-ektb/java-explore-with-me/blob/feature_comments/postman/feature.json), например в Postman.
 
-## Как запускать приложение ?
+## Как запускать приложение?
 
-* склонировать и открыть проект в IntelliJ IDEA 
+* клонировать и открыть проект в IntelliJ IDEA 
 * запустить приложение Docker
 * выполнения сборку проекта
 * далее в терминал запустить команду docker compose up и дождаться успешного запуска проекта в контейнерах Docker.
+
 
 ##  Технологический стек:
 ![Java 11](https://img.shields.io/badge/-Java-green) ![11](https://img.shields.io/badge/-11-orange) ![Spring Boot 2.7.2 ](https://img.shields.io/badge/-Spring%20Boot-blue) ![2.7.2 ](https://img.shields.io/badge/-2.7.2-orange) ![Postgres SQL](https://img.shields.io/badge/-Postgres%20SQL-brightgreen) ![Postgres SQL](https://img.shields.io/badge/-11--alpine%20-orange) ![Lombock](https://img.shields.io/badge/-Lombok%201.18.24-lightgrey) ![hib](https://img.shields.io/badge/-Hibernate%205.6.10%20-green) ![Apache](https://img.shields.io/badge/-Apache%20Maven%204.0.0-blue) ![Docker](https://badgen.net/badge/icon/docker?icon=docker&label) ![Git](https://badgen.net/badge/icon/github?icon=github&label)     
